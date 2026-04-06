@@ -1,0 +1,45 @@
+name: Graftery
+options:
+  bundleIdPrefix: com.diranged.graftery
+  minimumXcodeGenVersion: "2.40"
+  deploymentTarget:
+    macOS: "14.0"
+
+packages:
+  Yams:
+    url: https://github.com/jpsim/Yams.git
+    from: "5.0.0"
+
+targets:
+  Graftery:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    dependencies:
+      - package: Yams
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: com.diranged.graftery
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_IDENTITY: "-"
+        ENABLE_HARDENED_RUNTIME: false
+        INFOPLIST_KEY_LSUIElement: true
+
+  GrafteryUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: Graftery
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: com.diranged.graftery.uitests
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        SWIFT_VERSION: "5.9"
+        TEST_TARGET_NAME: Graftery

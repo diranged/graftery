@@ -1,0 +1,18 @@
+# Build output
+graftery
+build/
+
+# Swift Package Manager build artifacts
+ConfigUI/.build/
+
+# Generated packaging assets
+packaging/AppIcon.icns
+packaging/AppIcon.iconset/
+packaging/_icon_source.png
+
+# macOS system files
+.DS_Store
+**/dmg_ds_store
+
+# Generated Xcode project (regenerate from ConfigUI/project.yml)
+ConfigUI/Graftery.xcodeproj/

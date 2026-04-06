@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-cli:
+    name: Build Go CLI
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build
+        run: make build-cli
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: graftery-cli
+          path: build/graftery
+
+  build-swift:
+    name: Build Swift App
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: make build-swift
+
+  build-app:
+    name: Build .app Bundle + DMG
+    runs-on: macos-15
+    needs: [build-cli, build-swift]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # Rebuild both binaries (faster than downloading artifacts + reassembling)
+      - name: Build CLI
+        run: make build-cli
+
+      - name: Build Swift app
+        run: make build-swift
+
+      - name: Assemble .app bundle
+        run: make build-app
+
+      - name: Build DMG
+        run: make build-dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Graftery.dmg
+          path: build/Graftery.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Graftery.app
+          path: build/Graftery.app
