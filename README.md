@@ -17,20 +17,23 @@
 
 ---
 
-<br/>
-
 ## Overview
 
 Graftery bridges **GitHub Actions** with **ephemeral macOS virtual machines** running on Apple hardware. It speaks the same [scale-set protocol](https://github.com/actions/scaleset) used by [Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) inside Kubernetes — but runs directly on a Mac host.
 
-It ships as both a **menu bar app** and a **standalone CLI**.
-
-<br/>
-
 > [!NOTE]
 > **How it works** — Graftery long-polls GitHub for pending jobs, clones a Tart base VM for each one, injects JIT runner config, and tears the VM down when the job finishes. On startup it detects and removes any orphaned VMs left behind by crashes.
 
-<br/>
+Graftery ships in two forms — choose the one that fits your setup:
+
+| | macOS App | CLI |
+|:---|:---|:---|
+| **Best for** | Single Mac with a menu bar | Headless servers, automation, CI-of-CI |
+| **Install** | [Download DMG](#-macos-app) | [Download binary](#-cli) |
+| **Config** | Setup wizard + menu bar controls | Config file + flags |
+| **Runs as** | Menu bar app (launchd-friendly) | Foreground process |
+
+---
 
 ## Requirements
 
@@ -39,52 +42,44 @@ It ships as both a **menu bar app** and a **standalone CLI**.
 | ![macOS](https://img.shields.io/badge/-macOS_14+-0e6878?style=flat-square&logo=apple&logoColor=white) | Sonoma or later |
 | ![Tart](https://img.shields.io/badge/-Tart-094858?style=flat-square&logoColor=white) | `brew install cirruslabs/cli/tart` |
 | ![Auth](https://img.shields.io/badge/-GitHub_Auth-c94a30?style=flat-square&logo=github&logoColor=white) | GitHub App credentials **or** a Personal Access Token |
-| ![VM](https://img.shields.io/badge/-Base_VM-1a8090?style=flat-square&logoColor=white) | Tart image with the Actions runner binary &amp; startup script ([details](#base-vm-image-requirements)) |
+| ![VM](https://img.shields.io/badge/-Base_VM-1a8090?style=flat-square&logoColor=white) | Tart image with the Actions runner binary & startup script ([details](#base-vm-image-requirements)) |
 
-<br/>
+---
+
+# <img src="https://img.shields.io/badge/-macOS_App-0e6878?style=for-the-badge&logo=apple&logoColor=white" alt="macOS App" />
 
 ## Installation
 
-### From DMG <img src="https://img.shields.io/badge/recommended-0e6878?style=flat-square" alt="recommended" />
+Download the latest **DMG** from the [Releases](https://github.com/diranged/graftery/releases) page, open it, and drag **Graftery** into your Applications folder.
 
-Download the latest DMG from the [Releases](https://github.com/diranged/graftery/releases) page, open it, and drag **Graftery** to your Applications folder.
+That's it — no dependencies beyond [Tart](#requirements).
 
-### From Source
-
-```bash
-git clone https://github.com/diranged/graftery.git
-cd graftery
-make install          # builds .app bundle → /Applications/Graftery.app
-```
-
-> Requires Xcode command-line tools and Swift.
-
-<br/>
+> [!TIP]
+> Building from source? See [Building from Source](#building-from-source) at the bottom of this page.
 
 ## Quick Start
 
-```
-1.  Launch Graftery from Applications (or Spotlight)
-2.  Walk through the configuration wizard → credentials, base VM, runner limits
-3.  Config is saved to ~/Library/Application Support/graftery/config.yaml
-4.  The runner connects to GitHub and begins listening for jobs
-5.  Menu bar shows live status  (e.g. ARC: 1/2 → 1 busy / 2 total)
-```
-
-<br/>
+1. **Launch Graftery** from Applications (or Spotlight).
+2. The **configuration wizard** walks you through entering your GitHub credentials, selecting a base VM image, and setting runner limits.
+3. Your config is saved to `~/Library/Application Support/graftery/config.yaml`.
+4. The runner connects to GitHub and begins listening for jobs automatically.
+5. The menu bar icon shows live status — e.g. **ARC: 1/2** means 1 busy out of 2 total runners.
 
 ## Configuration
 
-<details>
-<summary><img src="https://img.shields.io/badge/-Config_File_Location-094858?style=flat-square" alt="" /> &nbsp; <code>~/Library/Application Support/graftery/config.yaml</code></summary>
+Config file location: `~/Library/Application Support/graftery/config.yaml`
 
-A default config is created on first launch. Open it from the menu bar (**Open Config File**) or with any text editor.
+A default config is created on first launch. You can edit it through the menu bar or with any text editor.
 
-</details>
+### Menu bar controls
 
-<br/>
+| Action | What it does |
+|:---|:---|
+| **Open Config File** | Opens the YAML in your default editor |
+| **Reload Config** | Re-reads and applies changes live |
+| **Open Logs** | Opens `~/Library/Logs/graftery/graftery.log` |
 
-### Full config reference
+### Config file reference
 
 ```yaml
 # ── GitHub target ────────────────────────────────────────
@@ -126,19 +121,25 @@ log_level:  info          # debug | info | warn | error
 log_format: text          # text | json
 ```
 
-### Editing via the menu bar
+---
 
-| Action | What it does |
-|:---|:---|
-| **Open Config File** | Opens the YAML in your default editor |
-| **Reload Config** | Re-reads and applies changes live |
-| **Open Logs** | Opens `~/Library/Logs/graftery/graftery.log` |
+# <img src="https://img.shields.io/badge/-CLI-094858?style=for-the-badge&logo=gnubash&logoColor=white" alt="CLI" />
 
-<br/>
+## Installation
 
-## CLI Usage
+Download the latest **`graftery` binary** from the [Releases](https://github.com/diranged/graftery/releases) page and place it somewhere in your `PATH`.
 
-The Go binary works as a standalone CLI — no macOS app wrapper required.
+```bash
+# Example: install to /usr/local/bin
+curl -fSL https://github.com/diranged/graftery/releases/latest/download/graftery-darwin-arm64 \
+  -o /usr/local/bin/graftery
+chmod +x /usr/local/bin/graftery
+```
+
+> [!TIP]
+> Building from source? See [Building from Source](#building-from-source) at the bottom of this page.
+
+## Usage
 
 ```bash
 # Using a config file
@@ -162,12 +163,9 @@ graftery \
   --base-image ghcr.io/cirruslabs/macos-runner:sonoma
 ```
 
-> When `--config` is provided, the file is loaded first and any additional flags override its values.
+When `--config` is provided, the file is loaded first and any additional flags override its values.
 
-<details>
-<summary><img src="https://img.shields.io/badge/-All_CLI_Flags-0e6878?style=flat-square" alt="" /> &nbsp; expand for full table</summary>
-
-<br/>
+## CLI Flags
 
 | Flag | Req | Default | Description |
 |:---|:---:|:---|:---|
@@ -190,11 +188,15 @@ graftery \
 
 \* Provide **either** GitHub App credentials **or** `--token`.
 
-</details>
+## Logging
 
-<br/>
+Logs go to stderr by default. Use `--log-level debug` for verbose output, or `--log-format json` for structured logs.
 
-## Image Provisioning
+---
+
+# <img src="https://img.shields.io/badge/-Image_Provisioning-1a8090?style=for-the-badge&logoColor=white" alt="Image Provisioning" />
+
+_Applies to both the macOS app and CLI._
 
 Graftery automatically **bakes** a prepared VM image from your base Tart image. The first run (or whenever scripts change) triggers provisioning:
 
@@ -205,7 +207,7 @@ Graftery automatically **bakes** a prepared VM image from your base Tart image. 
 
 A content hash of all scripts is cached — subsequent runs skip provisioning if nothing changed.
 
-### Built-in scripts
+## Built-in scripts
 
 | Script | Purpose |
 |:---|:---|
@@ -213,7 +215,7 @@ A content hash of all scripts is cached — subsequent runs skip provisioning if
 | ![02](https://img.shields.io/badge/02-setup--info.py-094858?style=flat-square) | Generates `.setup_info` — VM info shown in GitHub Actions "Set up job" step |
 | ![03](https://img.shields.io/badge/03-runner--hooks.sh-094858?style=flat-square) | Installs pre/post job hooks via `ACTIONS_RUNNER_HOOK_JOB_STARTED` / `COMPLETED` |
 
-### Custom provisioning scripts
+## Custom provisioning scripts
 
 Drop your own scripts into the user scripts directory:
 
@@ -229,6 +231,7 @@ Drop your own scripts into the user scripts directory:
       50-emit-metrics.sh         # custom post-job hook
 ```
 
+> [!NOTE]
 > **Merge behavior:** User scripts merge with built-ins. Same-name files override. Execution is lexicographic (`50-*` runs after `01-*` through `03-*`).
 
 Override the directory:
@@ -238,14 +241,14 @@ provisioning:
   scripts_dir: /path/to/custom/scripts
 ```
 
-### Forcing reprovisioning
+## Forcing reprovisioning
 
 ```bash
-graftery --reprovision --config config.yaml       # force a fresh bake
+graftery --reprovision --config config.yaml           # force a fresh bake
 graftery --skip-builtin-scripts --config config.yaml  # only run user scripts
 ```
 
-### Pre/post job hooks
+## Pre/post job hooks
 
 Hooks use GitHub Actions' native runner hook mechanism and appear in the job UI as collapsible sections:
 
@@ -256,7 +259,7 @@ Hooks use GitHub Actions' native runner hook mechanism and appear in the job UI 
 
 Hooks receive standard Actions environment variables (`GITHUB_REPOSITORY`, `GITHUB_RUN_ID`, etc.).
 
-### Base VM image requirements
+## Base VM image requirements
 
 The base Tart image must include:
 
@@ -268,7 +271,7 @@ The base Tart image must include:
 
 > The default `ghcr.io/cirruslabs/macos-runner:sonoma` satisfies all requirements.
 
-### Example: adding a tool to the baked image
+## Example: adding a tool to the baked image
 
 Need CocoaPods for your builds? Create a bake script:
 
@@ -284,7 +287,7 @@ sudo ln -sf "$(rbenv which pod)" /usr/local/bin/pod
 
 Restart the runner — it detects the new script, reprovisions, and every future VM ships with `pod`.
 
-### More examples
+## More examples
 
 See the [`examples/`](examples/) directory:
 
@@ -292,19 +295,22 @@ See the [`examples/`](examples/) directory:
 |:---|:---|
 | [iOS / React Native](examples/ios-react-native/) | CocoaPods, ccache, Expo prebuild, workflow caching for Pods and DerivedData |
 
-<br/>
+---
 
-## Troubleshooting
+# <img src="https://img.shields.io/badge/-Troubleshooting-c94a30?style=for-the-badge&logoColor=white" alt="Troubleshooting" />
 
 <details>
-<summary><img src="https://img.shields.io/badge/-tart_not_found-c94a30?style=flat-square" alt="" /></summary>
+<summary><strong><code>tart</code> not found</strong></summary>
 
 The `tart` binary must be in your PATH:
 
 ```bash
 brew install cirruslabs/cli/tart
+```
 
-# Or specify explicitly:
+Or specify the path explicitly via CLI flag or config:
+
+```bash
 graftery --tart-path /opt/homebrew/bin/tart --config config.yaml
 ```
 
@@ -315,7 +321,7 @@ tart_path: /opt/homebrew/bin/tart
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/-Authentication_errors-c94a30?style=flat-square" alt="" /></summary>
+<summary><strong>Authentication errors</strong></summary>
 
 | Error | Fix |
 |:---|:---|
@@ -326,7 +332,7 @@ tart_path: /opt/homebrew/bin/tart
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/-Orphaned_VMs-c94a30?style=flat-square" alt="" /></summary>
+<summary><strong>Orphaned VMs</strong></summary>
 
 On startup, Graftery auto-removes VMs matching the runner prefix. To clean up manually:
 
@@ -339,7 +345,7 @@ tart delete runner-abc12345       # delete
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/-Scale_set_registration_fails-c94a30?style=flat-square" alt="" /></summary>
+<summary><strong>Scale set registration fails</strong></summary>
 
 - Verify `--url` points to a valid GitHub org or repo
 - Ensure your GitHub App has the required permissions, or your PAT has `admin:org` (org-level) / `repo` (repo-level) scope
@@ -347,23 +353,23 @@ tart delete runner-abc12345       # delete
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/-Max_runners_limit-c94a30?style=flat-square" alt="" /></summary>
+<summary><strong>Max runners limit</strong></summary>
 
 Apple's virtualization framework allows **max 2 concurrent macOS VMs per host**. The default `max_runners: 2` reflects this. Setting it higher may cause VM creation failures.
 
 </details>
 
 <details>
-<summary><img src="https://img.shields.io/badge/-Logs-1a8090?style=flat-square" alt="" /></summary>
+<summary><strong>Logs</strong></summary>
 
 | Mode | Location |
 |:---|:---|
-| **GUI** | `~/Library/Logs/graftery/graftery.log` (menu bar → Open Logs) |
+| **macOS App** | `~/Library/Logs/graftery/graftery.log` (menu bar -> Open Logs) |
 | **CLI** | stderr — use `--log-level debug` for verbose output |
 
 </details>
 
-<br/>
+---
 
 ## Building from Source
 
@@ -379,13 +385,9 @@ make clean        # remove build artifacts
 
 All artifacts are placed in the `build/` directory.
 
-<br/>
-
 ## License
 
 TBD
-
-<br/>
 
 ---
 
