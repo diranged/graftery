@@ -1,4 +1,19 @@
 #!/bin/bash
+
+# Copyright 2026 Matt Wise
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Creates a drag-and-drop DMG installer for Graftery.
 #
 # Downloads create-dmg (pinned to a specific SHA) into a local bin directory
@@ -49,6 +64,7 @@ cp -R "$APP_PATH" "$STAGING_DIR/"
 echo "Building DMG..."
 "$CREATE_DMG" \
     --volname "Graftery" \
+    --volicon "$SCRIPT_DIR/AppIcon.icns" \
     --background "$SCRIPT_DIR/dmg-background.png" \
     --window-pos 200 120 \
     --window-size 600 400 \
@@ -62,6 +78,31 @@ echo "Building DMG..."
     "$STAGING_DIR/"
 
 rm -rf "$STAGING_DIR"
+
+# Stamp the Graftery icon onto the .dmg file itself so Finder shows it in
+# Downloads / Desktop instead of the generic white-page icon.
+#   1. sips -i  embeds the icon into the .icns resource fork
+#   2. DeRez    extracts that resource as Rez source
+#   3. Rez      appends the resource to the DMG
+#   4. SetFile -a C  sets the kHasCustomIcon Finder flag
+# Requires Xcode command-line tools (ships with macOS developer tools).
+ICON_ICNS="$SCRIPT_DIR/AppIcon.icns"
+if [ -f "$ICON_ICNS" ]; then
+    echo "Setting custom icon on DMG file..."
+    ICON_TMP="$(mktemp -d)/icon_tmp"
+    cp "$ICON_ICNS" "$ICON_TMP.icns"
+    sips -i "$ICON_TMP.icns" >/dev/null 2>&1 || true
+    DeRez -only icns "$ICON_TMP.icns" > "$ICON_TMP.rsrc" 2>/dev/null || true
+    if [ -s "$ICON_TMP.rsrc" ]; then
+        Rez -append "$ICON_TMP.rsrc" -o "$DMG_PATH"
+        SetFile -a C "$DMG_PATH"
+        echo "Custom icon set on DMG."
+    else
+        echo "Warning: could not extract icon resource; DMG will use default icon."
+    fi
+    rm -f "$ICON_TMP.icns" "$ICON_TMP.rsrc"
+    rmdir "$(dirname "$ICON_TMP")" 2>/dev/null || true
+fi
 
 echo ""
 echo "Created $DMG_PATH"
