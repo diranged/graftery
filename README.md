@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/icon.svg" alt="Graftery" width="160" height="160" />
+  <img src="docs/icon.png" alt="Graftery" width="160" height="160" />
 </p>
 
 <h1 align="center">Graftery</h1>
