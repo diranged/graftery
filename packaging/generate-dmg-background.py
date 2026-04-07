@@ -17,33 +17,38 @@
 """
 Generates the DMG installer background image for Graftery.
 
-Color palette is drawn from docs/icon.svg:
-  - Dark teal background: #0a1a20
-  - Teal strand:          #0e6878
-  - Darker teal strand:   #094858
-  - Light teal accent:    #1a8090
-  - Coral accent:         #c94a30 / #e86040 / #f07050
+The background uses a light-teal radial gradient with a faint helix motif
+and a coral drag-arrow between the two icon positions.  Finder draws its own
+icon labels, so we deliberately omit text from the image.
 
-DMG window is 600x400.  Icon centres:
-  - Graftery.app  at (175, 190)
-  - Applications  at (425, 190)
-The arrow sits in the gap between them.
+Color palette derived from icons/icon.svg:
+  - Teal strand:       #0e6878
+  - Darker teal:       #094858
+  - Light teal accent: #1a8090
+  - Coral accent:      #c94a30 / #e86040 / #f07050
+
+DMG window geometry (must match build-dmg.sh --window-size / --icon positions):
+  - Window:       600 x 400
+  - Graftery.app  centred at (175, 190)
+  - Applications  centred at (425, 190)
 """
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFilter
 import math, os
 
 WIDTH, HEIGHT = 600, 400
 
-# --- palette (from icon.svg) ---
-BG_DARK   = (10, 26, 32)       # #0a1a20
-BG_MID    = (14, 50, 62)       # #0e323e  (interpolated)
-TEAL      = (14, 104, 120)     # #0e6878
-TEAL_DK   = (9, 72, 88)       # #094858
-TEAL_LT   = (26, 128, 144)    # #1a8090
-CORAL     = (201, 74, 48)      # #c94a30
-CORAL_LT  = (240, 112, 80)    # #f07050
-CORAL_BRT = (232, 96, 64)      # #e86040
+# --- palette ---
+# Background kept light so Finder's black icon labels remain readable.
+BG_DARK   = (180, 215, 220)    # light teal (edge of radial gradient)
+BG_MID    = (210, 235, 238)    # very light teal (centre of radial gradient)
+# Helix / accent colours taken directly from icons/icon.svg.
+TEAL      = (14, 104, 120)     # #0e6878  rootstock strand
+TEAL_DK   = (9, 72, 88)       # #094858  scion continuation
+TEAL_LT   = (26, 128, 144)    # #1a8090  helix crossbar tint
+CORAL     = (201, 74, 48)      # #c94a30  union band / arrow base
+CORAL_LT  = (240, 112, 80)    # #f07050  arrowhead fill
+CORAL_BRT = (232, 96, 64)      # #e86040  arrow shaft
 
 
 def lerp_color(c1, c2, t):
@@ -65,7 +70,7 @@ def draw_gradient_bg(img):
 
 def draw_subtle_helix(img):
     """Draw faint helix curves echoing the icon DNA motif."""
-    for strand_offset, color, alpha in [(0, TEAL, 30), (math.pi, TEAL_DK, 24)]:
+    for strand_offset, color, alpha in [(0, TEAL, 45), (math.pi, TEAL_DK, 35)]:
         overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
         od = ImageDraw.Draw(overlay)
         amplitude = 70
@@ -90,7 +95,7 @@ def draw_subtle_helix(img):
         y2 = int(cy + 70 * math.sin(freq * x + math.pi))
         # Only draw crossbars near where strands are close
         if abs(y1 - y2) < 50:
-            od.line([(x, y1), (x, y2)], fill=(*TEAL_LT, 12), width=1)
+            od.line([(x, y1), (x, y2)], fill=(*TEAL_LT, 20), width=1)
     img.paste(Image.alpha_composite(
         Image.new("RGBA", img.size, (0, 0, 0, 0)), overlay), mask=overlay)
 
@@ -143,28 +148,6 @@ def draw_arrow(img):
         Image.new("RGBA", img.size, (0, 0, 0, 0)), overlay), mask=overlay)
 
 
-def draw_labels(img):
-    """Draw centred labels below icon positions."""
-    overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
-    od = ImageDraw.Draw(overlay)
-
-    try:
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 13)
-    except (OSError, IOError):
-        try:
-            font = ImageFont.truetype("/System/Library/Fonts/SFNSText.ttf", 13)
-        except (OSError, IOError):
-            font = ImageFont.load_default()
-
-    for text, cx in [("Graftery", 175), ("Applications", 425)]:
-        bbox = od.textbbox((0, 0), text, font=font)
-        tw = bbox[2] - bbox[0]
-        od.text((cx - tw // 2, 258), text, fill=(*TEAL_LT, 200), font=font)
-
-    img.paste(Image.alpha_composite(
-        Image.new("RGBA", img.size, (0, 0, 0, 0)), overlay), mask=overlay)
-
-
 def draw_top_accent(img):
     """Thin teal accent line at the very top."""
     overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
@@ -183,7 +166,6 @@ def main():
     draw_subtle_helix(img)
     draw_top_accent(img)
     draw_arrow(img)
-    draw_labels(img)
 
     # Final output as RGB PNG (DMG backgrounds don't need alpha)
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)),
