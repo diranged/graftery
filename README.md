@@ -12,7 +12,7 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS_14+-0e6878?style=flat-square&logo=apple&logoColor=white" />
   <img alt="Protocol" src="https://img.shields.io/badge/protocol-actions%2Fscaleset-094858?style=flat-square&logo=github&logoColor=white" />
   <img alt="Virtualization" src="https://img.shields.io/badge/virt-Tart-c94a30?style=flat-square&logo=apple&logoColor=white" />
-  <img alt="License" src="https://img.shields.io/badge/license-TBD-1a8090?style=flat-square" />
+  <img alt="License" src="https://img.shields.io/badge/license-Apache_2.0-1a8090?style=flat-square" />
 </p>
 
 ---
@@ -387,7 +387,7 @@ All artifacts are placed in the `build/` directory.
 
 ## License
 
-TBD
+[Apache License 2.0](LICENSE)
 
 ---
 

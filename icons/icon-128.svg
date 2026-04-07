@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!--
+    Graftery App Icon — V2 — 128pt (Dock/Finder)
+    Simplified: ghost dropped, union band + forming box
+  -->
+  <rect x="0" y="0" width="128" height="128" rx="30" fill="#0a1a20"/>
+  <clipPath id="dock"><rect x="0" y="0" width="128" height="128" rx="30"/></clipPath>
+  <g clip-path="url(#dock)">
+    <path d="M38 -18 Q42 30 38 78 Q34 126 38 148"
+          fill="none" stroke="#0e6878" stroke-width="48" stroke-linecap="round"/>
+    <path d="M120 4 Q102 20 94 36 Q86 50 74 60"
+          fill="none" stroke="#1aabb8" stroke-width="11" stroke-linecap="round"/>
+    <path d="M74 60 Q66 78 64 98 Q62 114 64 126"
+          fill="none" stroke="#0e8898" stroke-width="9" stroke-linecap="round"/>
+    <rect x="12" y="50" width="104" height="28" rx="6" fill="#c94a30"/>
+    <line x1="12" y1="60" x2="116" y2="60" stroke="#f07858" stroke-width="1.5" opacity="0.55"/>
+    <line x1="12" y1="70" x2="116" y2="70" stroke="#f07858" stroke-width="1.5" opacity="0.55"/>
+    <line x1="16" y1="86" x2="112" y2="86" stroke="#c94a30" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+    <line x1="16" y1="86" x2="16" y2="116" stroke="#c94a30" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+    <line x1="112" y1="86" x2="112" y2="116" stroke="#c94a30" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+    <line x1="16" y1="116" x2="112" y2="116" stroke="#c94a30" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.3" stroke-linecap="round"/>
+  </g>
+</svg>

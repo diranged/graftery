@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="512" height="512">
+  <!--
+    Graftery App Icon — V2 — 512pt
+    Full detail: ghost box / union band / forming box
+  -->
+  <rect x="0" y="0" width="300" height="300" rx="68" fill="#0a1a20"/>
+  <clipPath id="full"><rect x="0" y="0" width="300" height="300" rx="68"/></clipPath>
+  <g clip-path="url(#full)">
+    <path d="M72 -28 Q80 66 72 138 Q64 210 72 332"
+          fill="none" stroke="#0e6878" stroke-width="72" stroke-linecap="round"/>
+    <path d="M240 8 Q198 42 182 78 Q166 110 150 130 Q126 152 108 166"
+          fill="none" stroke="#1aabb8" stroke-width="17" stroke-linecap="round"/>
+    <path d="M108 166 Q94 204 92 250 Q90 290 92 322"
+          fill="none" stroke="#0e8898" stroke-width="14" stroke-linecap="round"/>
+    <rect x="32" y="18" width="118" height="42" rx="8"
+          fill="none" stroke="#c94a30" stroke-width="1.5" opacity="0.2" stroke-dasharray="4,4"/>
+    <rect x="32" y="146" width="158" height="44" rx="8" fill="#c94a30"/>
+    <line x1="32" y1="158" x2="190" y2="158" stroke="#f07050" stroke-width="2" opacity="0.5"/>
+    <line x1="32" y1="168" x2="190" y2="168" stroke="#f07858" stroke-width="2" opacity="0.6"/>
+    <line x1="32" y1="178" x2="190" y2="178" stroke="#f07050" stroke-width="2" opacity="0.5"/>
+    <rect x="32" y="146" width="158" height="44" rx="8" fill="none" stroke="#f08060" stroke-width="1" opacity="0.25"/>
+    <line x1="38" y1="220" x2="176" y2="220" stroke="#c94a30" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+    <line x1="38" y1="220" x2="38" y2="276" stroke="#c94a30" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+    <line x1="176" y1="220" x2="176" y2="276" stroke="#c94a30" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+    <rect x="38" y="220" width="138" height="30" fill="#c94a30" opacity="0.2"/>
+    <line x1="38" y1="276" x2="176" y2="276" stroke="#c94a30" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.32" stroke-linecap="round"/>
+  </g>
+</svg>

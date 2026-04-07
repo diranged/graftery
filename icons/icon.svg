@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="1024" height="1024">
+  <!--
+    Graftery App Icon — V2
+    Concept: Asymmetric graft — thick rootstock (left) + thin wiggly scion (upper-right)
+    Color scheme: C6 — dark teal background (#0a1a20), teal strands, coral VM boxes
+    Lifecycle metaphor:
+      - ghost box (top): pre-graft, VM not yet started
+      - solid coral box (middle): graft union point = running VM
+      - forming box (bottom): new VM being assembled below the union
+    Date: 2026-04-06
+  -->
+
+  <rect x="0" y="0" width="400" height="400" rx="90" fill="#0a1a20"/>
+
+  <!-- ROOTSTOCK — thick, nearly straight, left-of-center -->
+  <path d="M88 -20 Q98 110 88 220 Q78 330 88 480"
+        fill="none" stroke="#0e6878" stroke-width="96" stroke-linecap="round"/>
+
+  <!-- SCION — thin, wiggly, enters from upper-right -->
+  <path d="M340 40 Q280 90 260 140 Q240 190 220 210 Q180 240 150 260"
+        fill="none" stroke="#1aabb8" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- scion continues below graft point -->
+  <path d="M150 260 Q130 310 128 370 Q126 420 130 460"
+        fill="none" stroke="#0e8898" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- ghost box — upper, pre-graft -->
+  <rect x="42" y="40" width="160" height="56" rx="10"
+        fill="none" stroke="#c94a30" stroke-width="2" opacity="0.18" stroke-dasharray="5,4"/>
+
+  <!-- UNION BAND — solid coral, at graft point -->
+  <rect x="42" y="238" width="210" height="58" rx="10" fill="#c94a30" opacity="0.95"/>
+  <line x1="42" y1="253" x2="252" y2="253" stroke="#f07050" stroke-width="2.5" opacity="0.6"/>
+  <line x1="42" y1="267" x2="252" y2="267" stroke="#f07858" stroke-width="2.5" opacity="0.65"/>
+  <line x1="42" y1="281" x2="252" y2="281" stroke="#f07050" stroke-width="2" opacity="0.5"/>
+  <rect x="42" y="238" width="210" height="58" rx="10"
+        fill="none" stroke="#f08060" stroke-width="1.5" opacity="0.3"/>
+
+  <!-- FORMING BOX — below graft, open bottom -->
+  <line x1="48" y1="334" x2="232" y2="334" stroke="#c94a30" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <line x1="48" y1="334" x2="48" y2="400" stroke="#c94a30" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <line x1="232" y1="334" x2="232" y2="400" stroke="#c94a30" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <rect x="48" y="334" width="184" height="42" fill="#c94a30" opacity="0.22"/>
+  <line x1="48" y1="400" x2="232" y2="400"
+        stroke="#c94a30" stroke-width="2" stroke-dasharray="5,5" opacity="0.35" stroke-linecap="round"/>
+</svg>
