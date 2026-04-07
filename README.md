@@ -100,24 +100,32 @@ That's it — no dependencies beyond [Tart](#requirements).
 ## Quick Start
 
 1. **Launch Graftery** from Applications (or Spotlight).
-2. The **configuration wizard** walks you through entering your GitHub credentials, selecting a base VM image, and setting runner limits.
-3. Your config is saved to `~/Library/Application Support/graftery/config.yaml`.
-4. The runner connects to GitHub and begins listening for jobs automatically.
-5. The menu bar icon shows live status — e.g. **ARC: 1/2** means 1 busy out of 2 total runners.
+2. The **setup wizard** walks you through creating your first runner configuration — name it, enter your GitHub credentials, choose a base VM image, and set runner limits.
+
+<p align="center">
+  <img src="docs/screenshots/wizard-name.png" alt="Setup wizard — name your configuration" width="420" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/wizard-auth.png" alt="Setup wizard — authentication" width="420" />
+</p>
+
+3. The runner connects to GitHub and begins listening for jobs automatically.
+4. The **menu bar icon** shows live status. Click it to start/stop runners, add new configurations, or open the management window.
+
+<p align="center">
+  <img src="docs/screenshots/menu-bar.png" alt="Menu bar dropdown" width="220" />
+</p>
+
+5. Open **Manage Configurations** for the full editor — tabbed settings, live CPU & memory charts, and a built-in log viewer.
+
+<p align="center">
+  <img src="docs/screenshots/config-editor.png" alt="Configuration editor with metrics" width="700" />
+</p>
 
 ## Configuration
 
-Config file location: `~/Library/Application Support/graftery/config.yaml`
+Each runner configuration is stored as a YAML file in `~/Library/Application Support/graftery/configs/`. You can manage everything through the UI — the setup wizard for new configs, and the tabbed editor for changes (auto-saved on every edit).
 
-A default config is created on first launch. You can edit it through the menu bar or with any text editor.
-
-### Menu bar controls
-
-| Action | What it does |
-|:---|:---|
-| **Open Config File** | Opens the YAML in your default editor |
-| **Reload Config** | Re-reads and applies changes live |
-| **Open Logs** | Opens `~/Library/Logs/graftery/graftery.log` |
+You can also edit the YAML files directly with any text editor if you prefer.
 
 ### Config file reference
 
