@@ -1,0 +1,21 @@
+name: PR Title
+
+# Validate that PR titles follow the Conventional Commits specification
+# (e.g. "feat: ...", "fix: ...", "ci: ...").  This is enforced so that
+# release-drafter and changelog tooling can reliably categorise changes.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint:
+    name: Conventional Commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

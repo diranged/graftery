@@ -1,0 +1,58 @@
+name: Release
+
+# Build and attach artifacts when a version tag is pushed, then publish
+# the draft release that release-drafter has already prepared.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  # Re-use the CI workflow so we don't duplicate build definitions.
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  release:
+    name: Publish Release
+    runs-on: macos-15
+    needs: [ci]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # Build everything from scratch (cleaner than downloading CI artifacts
+      # across jobs, and takes ~30s on macos-15 runners).
+      - name: Build CLI
+        run: make build-cli
+
+      - name: Build Swift app
+        run: make build-swift
+
+      - name: Assemble .app bundle
+        run: make build-app
+
+      - name: Build DMG
+        run: make build-dmg
+
+      # Zip the .app bundle so it survives upload as a single file.
+      - name: Package .app as zip
+        run: cd build && zip -r Graftery.app.zip Graftery.app
+
+      # Upload artifacts to the release. softprops/action-gh-release will
+      # find the existing draft (created by release-drafter) for this tag,
+      # attach the files, and publish it.
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/Graftery.dmg
+            build/Graftery.app.zip
+            build/graftery
