@@ -17,21 +17,57 @@
 
 ---
 
-## Overview
+## Why Graftery?
 
-Graftery bridges **GitHub Actions** with **ephemeral macOS virtual machines** running on Apple hardware. It speaks the same [scale-set protocol](https://github.com/actions/scaleset) used by [Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) inside Kubernetes — but runs directly on a Mac host.
+If you run iOS, macOS, or Apple-platform CI on GitHub Actions, you need macOS runners. GitHub's hosted runners work, but they're expensive and you can't customize the image. Self-hosted runners on bare metal are fast and cheap — but managing them is painful: stale state bleeds between jobs, runner registration is manual, and there's no easy way to scale.
 
-> [!NOTE]
-> **How it works** — Graftery long-polls GitHub for pending jobs, clones a Tart base VM for each one, injects JIT runner config, and tears the VM down when the job finishes. On startup it detects and removes any orphaned VMs left behind by crashes.
+**Graftery fixes this.** It brings the same ephemeral, scale-to-zero model that [Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) provides on Kubernetes — but runs directly on a Mac. Every job gets a **fresh VM clone**. When the job finishes, the VM is destroyed. No state leaks, no drift, no cleanup scripts.
 
-Graftery ships in two forms — choose the one that fits your setup:
+### How it works
 
-| | macOS App | CLI |
+```
+GitHub Actions                        Your Mac
+─────────────                         ────────
+  Job queued  ──── scaleset poll ────▶  Graftery sees demand
+                                        │
+                                        ├─ Clones base VM image
+                                        ├─ Injects JIT runner config
+                                        ├─ Boots ephemeral Tart VM
+                                        ├─ Runner picks up the job
+                                        └─ VM destroyed on completion
+```
+
+Graftery speaks the [actions/scaleset](https://github.com/actions/scaleset) protocol natively — the same wire protocol ARC uses. No custom API, no webhook glue.
+
+### Core capabilities
+
+| | Feature | Details |
 |:---|:---|:---|
-| **Best for** | Single Mac with a menu bar | Headless servers, automation, CI-of-CI |
+| ![](https://img.shields.io/badge/-Ephemeral_VMs-0e6878?style=flat-square) | **Clean room every job** | Each job runs in a fresh VM clone. No state leaks between jobs, ever. |
+| ![](https://img.shields.io/badge/-Auto_Scaling-0e6878?style=flat-square) | **Scale to zero** | No jobs? No VMs. Runners spin up on demand and tear down when done. Configure a warm pool (`min_runners`) for faster pickup. |
+| ![](https://img.shields.io/badge/-Image_Baking-094858?style=flat-square) | **Custom VM images** | Drop shell scripts into `bake.d/` and Graftery bakes them into a prepared image. Install Xcode, CocoaPods, Homebrew packages — whatever your builds need. Content-hashed so reprovisioning only happens when scripts change. |
+| ![](https://img.shields.io/badge/-Job_Hooks-094858?style=flat-square) | **Pre/post job hooks** | Native GitHub Actions runner hooks (`ACTIONS_RUNNER_HOOK_JOB_STARTED` / `COMPLETED`). They show up as collapsible sections in the Actions UI. |
+| ![](https://img.shields.io/badge/-Crash_Recovery-1a8090?style=flat-square) | **Orphan cleanup** | On startup, Graftery finds and removes VMs left behind by crashes. Session conflicts with GitHub are retried automatically with exponential backoff. |
+| ![](https://img.shields.io/badge/-Observability-1a8090?style=flat-square) | **Prometheus metrics** | Host CPU/memory/disk, per-VM CPU/memory/uptime, job counters — all exposed via a `/metrics` endpoint. Includes Apple hypervisor (XPC) process tracking for accurate VM resource attribution. |
+| ![](https://img.shields.io/badge/-Dry_Run-1a8090?style=flat-square) | **Dry-run mode** | Test your setup without GitHub or Tart. Simulates the full lifecycle with fake jobs so you can validate config, control socket, and UI integration end-to-end. |
+
+### Two ways to run it
+
+Graftery ships as both a **macOS menu bar app** and a **standalone CLI**. They share the same Go backend — the app wraps the CLI in a native Swift UI.
+
+| | <img src="https://img.shields.io/badge/-macOS_App-0e6878?style=flat-square&logo=apple&logoColor=white" /> | <img src="https://img.shields.io/badge/-CLI-094858?style=flat-square&logo=gnubash&logoColor=white" /> |
+|:---|:---|:---|
+| **Best for** | Interactive use on a Mac with a display | Headless servers, automation, launchd/systemd |
 | **Install** | [Download DMG](#-macos-app) | [Download binary](#-cli) |
-| **Config** | Setup wizard + menu bar controls | Config file + flags |
-| **Runs as** | Menu bar app (launchd-friendly) | Foreground process |
+| **Runner sets** | **Multiple** — manage unlimited independent configs | **One** per process |
+| **Config** | 6-step setup wizard + tabbed editor with auto-save | YAML file + CLI flags |
+| **Metrics** | Live time-series charts (CPU & memory), menu bar gauges | Prometheus `/metrics` endpoint |
+| **Logs** | Built-in log viewer with search, level filtering, color | Structured logs to stderr |
+| **Controls** | Menu bar start/stop per runner, enable/disable auto-start | SIGINT/SIGTERM |
+| **Runs as** | Menu bar app | Foreground process |
+
+> [!TIP]
+> **Already using ARC on Kubernetes?** Graftery uses the same protocol and the same `runs-on:` label convention. Your workflows don't need to change — just point a scale set name at your Mac and go.
 
 ---
 
