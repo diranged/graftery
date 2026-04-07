@@ -5,8 +5,7 @@ build/
 # Swift Package Manager build artifacts
 ConfigUI/.build/
 
-# Generated packaging assets
-packaging/AppIcon.icns
+# Intermediate packaging assets (AppIcon.icns is committed)
 packaging/AppIcon.iconset/
 packaging/_icon_source.png
 

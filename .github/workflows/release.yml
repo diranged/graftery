@@ -11,16 +11,9 @@ permissions:
   contents: write
 
 jobs:
-  # Re-use the CI workflow so we don't duplicate build definitions.
-  ci:
-    uses: ./.github/workflows/ci.yml
-    permissions:
-      contents: read
-
   release:
     name: Publish Release
     runs-on: macos-15
-    needs: [ci]
     steps:
       - uses: actions/checkout@v4
 
