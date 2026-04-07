@@ -27,20 +27,8 @@ It ships as both a **menu bar app** and a **standalone CLI**.
 
 <br/>
 
-<table>
-<tr>
-<td width="60">
-
-### <!-- icon placeholder -->
-
-</td>
-<td>
-
-> **How it works** &mdash; Graftery long-polls GitHub for pending jobs, clones a Tart base VM for each one, injects JIT runner config, and tears the VM down when the job finishes. On startup it detects and removes any orphaned VMs left behind by crashes.
-
-</td>
-</tr>
-</table>
+> [!NOTE]
+> **How it works** — Graftery long-polls GitHub for pending jobs, clones a Tart base VM for each one, injects JIT runner config, and tears the VM down when the job finishes. On startup it detects and removes any orphaned VMs left behind by crashes.
 
 <br/>
 
