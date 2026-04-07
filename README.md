@@ -1,81 +1,113 @@
-# Graftery
+<p align="center">
+  <img src="docs/icon.svg" alt="Graftery" width="160" height="160" />
+</p>
 
-A lightweight macOS app and CLI that connects GitHub Actions to ephemeral [Tart](https://tart.run) macOS VMs using the [actions/scaleset](https://github.com/actions/scaleset) protocol.
+<h1 align="center">Graftery</h1>
 
-## What It Does
+<p align="center">
+  <strong>Ephemeral macOS VMs for GitHub Actions — powered by <a href="https://tart.run">Tart</a></strong>
+</p>
 
-Graftery bridges GitHub Actions with ephemeral macOS virtual machines running on Apple hardware. It uses the same scale-set protocol that [Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) uses inside Kubernetes, but runs directly on a Mac host.
+<p align="center">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS_14+-0e6878?style=flat-square&logo=apple&logoColor=white" />
+  <img alt="Protocol" src="https://img.shields.io/badge/protocol-actions%2Fscaleset-094858?style=flat-square&logo=github&logoColor=white" />
+  <img alt="Virtualization" src="https://img.shields.io/badge/virt-Tart-c94a30?style=flat-square&logo=apple&logoColor=white" />
+  <img alt="License" src="https://img.shields.io/badge/license-TBD-1a8090?style=flat-square" />
+</p>
 
-The app sits in your menu bar and:
+---
 
-- Long-polls GitHub for pending workflow jobs
-- Clones a Tart base VM image for each job
-- Injects JIT runner configuration into the VM via a shared directory
-- Cleans up the VM automatically after the job completes
-- Recovers from crashes by detecting and removing orphaned VMs on startup
+<br/>
 
-<!-- Screenshots
+## Overview
 
-TODO: Add screenshots of the menu bar app, configuration wizard, and status display.
+Graftery bridges **GitHub Actions** with **ephemeral macOS virtual machines** running on Apple hardware. It speaks the same [scale-set protocol](https://github.com/actions/scaleset) used by [Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) inside Kubernetes — but runs directly on a Mac host.
 
--->
+It ships as both a **menu bar app** and a **standalone CLI**.
+
+<br/>
+
+<table>
+<tr>
+<td width="60">
+
+### <!-- icon placeholder -->
+
+</td>
+<td>
+
+> **How it works** &mdash; Graftery long-polls GitHub for pending jobs, clones a Tart base VM for each one, injects JIT runner config, and tears the VM down when the job finishes. On startup it detects and removes any orphaned VMs left behind by crashes.
+
+</td>
+</tr>
+</table>
+
+<br/>
 
 ## Requirements
 
-- **macOS 14 (Sonoma)** or later
-- **[Tart](https://tart.run)** installed and available in PATH (`brew install cirruslabs/cli/tart`)
-- **GitHub App** credentials (Client ID, Installation ID, private key PEM) **or** a Personal Access Token with appropriate scopes
-- A **Tart base VM image** with the GitHub Actions runner binary and a startup script (see [Base VM Image Requirements](#base-vm-image-requirements))
+| Requirement | Details |
+|:---|:---|
+| ![macOS](https://img.shields.io/badge/-macOS_14+-0e6878?style=flat-square&logo=apple&logoColor=white) | Sonoma or later |
+| ![Tart](https://img.shields.io/badge/-Tart-094858?style=flat-square&logoColor=white) | `brew install cirruslabs/cli/tart` |
+| ![Auth](https://img.shields.io/badge/-GitHub_Auth-c94a30?style=flat-square&logo=github&logoColor=white) | GitHub App credentials **or** a Personal Access Token |
+| ![VM](https://img.shields.io/badge/-Base_VM-1a8090?style=flat-square&logoColor=white) | Tart image with the Actions runner binary &amp; startup script ([details](#base-vm-image-requirements)) |
+
+<br/>
 
 ## Installation
 
-### From DMG (recommended)
+### From DMG <img src="https://img.shields.io/badge/recommended-0e6878?style=flat-square" alt="recommended" />
 
-Download the latest DMG from the releases page, open it, and drag **Graftery** to your Applications folder.
+Download the latest DMG from the [Releases](https://github.com/diranged/graftery/releases) page, open it, and drag **Graftery** to your Applications folder.
 
-### From source
+### From Source
 
 ```bash
 git clone https://github.com/diranged/graftery.git
 cd graftery
-make install
+make install          # builds .app bundle → /Applications/Graftery.app
 ```
 
-This builds the full `.app` bundle (requires Xcode command-line tools and Swift) and copies it to `/Applications/Graftery.app`.
+> Requires Xcode command-line tools and Swift.
+
+<br/>
 
 ## Quick Start
 
-1. **Launch Graftery** from your Applications folder (or Spotlight).
-2. On first launch, the **configuration wizard** guides you through entering your GitHub credentials, selecting a base VM image, and setting runner limits.
-3. The configuration is saved to `~/Library/Application Support/graftery/config.yaml`.
-4. The runner connects to GitHub and begins listening for jobs automatically.
-5. The menu bar icon shows the current runner status (e.g., `ARC: 1/2` for 1 busy out of 2 total runners).
+```
+1.  Launch Graftery from Applications (or Spotlight)
+2.  Walk through the configuration wizard → credentials, base VM, runner limits
+3.  Config is saved to ~/Library/Application Support/graftery/config.yaml
+4.  The runner connects to GitHub and begins listening for jobs
+5.  Menu bar shows live status  (e.g. ARC: 1/2 → 1 busy / 2 total)
+```
+
+<br/>
 
 ## Configuration
 
-### Config file location
+<details>
+<summary><img src="https://img.shields.io/badge/-Config_File_Location-094858?style=flat-square" alt="" /> &nbsp; <code>~/Library/Application Support/graftery/config.yaml</code></summary>
 
-```
-~/Library/Application Support/graftery/config.yaml
-```
+A default config is created on first launch. Open it from the menu bar (**Open Config File**) or with any text editor.
 
-A default config file is created on first launch. You can edit it through the app (menu bar -> Open Config File) or with any text editor.
+</details>
 
-### Config fields
+<br/>
+
+### Full config reference
 
 ```yaml
-# GitHub org or repo URL for scale set registration
-url: https://github.com/your-org
+# ── GitHub target ────────────────────────────────────────
+url:  https://github.com/your-org        # org or repo URL
+name: macos-runner                        # scale set name (= runs-on: label)
 
-# Scale set name (also the runs-on: label in workflows)
-name: macos-runner
-
-# --- Authentication (choose one) ---
-
+# ── Authentication (choose one) ─────────────────────────
 # Option A: GitHub App
-app_client_id: "Iv1.abc123"
-app_installation_id: 12345678
-app_private_key_path: /path/to/private-key.pem
+app_client_id:         "Iv1.abc123"
+app_installation_id:   12345678
+app_private_key_path:  /path/to/private-key.pem
 # Or inline:
 # app_private_key: |
 #   -----BEGIN RSA PRIVATE KEY-----
@@ -84,60 +116,41 @@ app_private_key_path: /path/to/private-key.pem
 # Option B: Personal Access Token
 # token: ghp_xxxxxxxxxxxx
 
-# --- Runner settings ---
-
-# Tart VM image to clone for each runner
-base_image: ghcr.io/cirruslabs/macos-runner:sonoma
-
-# Maximum concurrent VMs (Apple allows max 2 macOS VMs per host)
-max_runners: 2
-
-# Warm pool size (VMs kept ready before jobs arrive)
-min_runners: 0
-
-# Additional labels for workflow targeting (defaults to the scale set name)
-# labels:
+# ── Runner settings ──────────────────────────────────────
+base_image:    ghcr.io/cirruslabs/macos-runner:sonoma
+max_runners:   2          # Apple allows max 2 macOS VMs per host
+min_runners:   0          # warm-pool size
+runner_group:  default
+runner_prefix: runner     # used for orphan detection on startup
+# labels:                 # defaults to scale set name
 #   - macos
 #   - sonoma
 
-# GitHub runner group name
-runner_group: default
-
-# VM name prefix (used for orphan detection on startup)
-runner_prefix: runner
-
-# --- Provisioning ---
-
-# Path to tart binary (default: look up in PATH)
+# ── Provisioning ─────────────────────────────────────────
 # tart_path: /opt/homebrew/bin/tart
-
-# Custom scripts directory for image baking and hooks
 # provisioning:
 #   scripts_dir: /path/to/custom/scripts
 #   skip_builtin_scripts: false
-#   prepared_image_name: ""  # auto-generated from base_image
+#   prepared_image_name: ""
 
-# --- Logging ---
-
-# Log level: debug, info, warn, error
-log_level: info
-
-# Log format: text or json
-log_format: text
+# ── Logging ──────────────────────────────────────────────
+log_level:  info          # debug | info | warn | error
+log_format: text          # text | json
 ```
 
-### Editing via the UI
+### Editing via the menu bar
 
-From the menu bar dropdown:
+| Action | What it does |
+|:---|:---|
+| **Open Config File** | Opens the YAML in your default editor |
+| **Reload Config** | Re-reads and applies changes live |
+| **Open Logs** | Opens `~/Library/Logs/graftery/graftery.log` |
 
-- **Open Config File** -- opens the YAML file in your default editor
-- **Reload Config** -- re-reads the config file and applies changes
-
-Logs are written to `~/Library/Logs/graftery/graftery.log` and can be opened from the menu bar via **Open Logs**.
+<br/>
 
 ## CLI Usage
 
-The Go binary can also be used as a standalone CLI without the macOS app wrapper:
+The Go binary works as a standalone CLI — no macOS app wrapper required.
 
 ```bash
 # Using a config file
@@ -147,13 +160,11 @@ graftery --config /path/to/config.yaml
 graftery \
   --url        https://github.com/your-org \
   --name       macos-runner \
-  --app-client-id      Iv1.abc123 \
+  --app-client-id       Iv1.abc123 \
   --app-installation-id 12345678 \
   --app-private-key-path /path/to/private-key.pem \
   --base-image ghcr.io/cirruslabs/macos-runner:sonoma \
-  --max-runners 2 \
-  --min-runners 0 \
-  --log-level  info
+  --max-runners 2
 
 # Using a PAT instead of a GitHub App
 graftery \
@@ -163,70 +174,76 @@ graftery \
   --base-image ghcr.io/cirruslabs/macos-runner:sonoma
 ```
 
-When `--config` is provided, the file is loaded first and any additional flags override the file values.
+> When `--config` is provided, the file is loaded first and any additional flags override its values.
 
-### All flags
+<details>
+<summary><img src="https://img.shields.io/badge/-All_CLI_Flags-0e6878?style=flat-square" alt="" /> &nbsp; expand for full table</summary>
 
-| Flag | Required | Default | Description |
-|---|---|---|---|
-| `--config` | no | | Path to YAML config file |
-| `--url` | yes | | GitHub org or repo URL for scale set registration |
-| `--name` | yes | | Scale set name (also the `runs-on:` label) |
-| `--app-client-id` | * | | GitHub App Client ID |
-| `--app-installation-id` | * | | GitHub App Installation ID |
-| `--app-private-key-path` | * | | Path to PEM file |
-| `--app-private-key` | * | | PEM contents inline (alternative to path) |
-| `--token` | * | | Personal access token (alternative to GitHub App) |
-| `--base-image` | no | `ghcr.io/cirruslabs/macos-runner:sonoma` | Tart VM image to clone for each runner |
-| `--max-runners` | no | `2` | Maximum concurrent VMs |
-| `--min-runners` | no | `0` | Warm pool size |
-| `--labels` | no | (same as `--name`) | Additional labels for workflow targeting |
-| `--runner-group` | no | `default` | GitHub runner group name |
-| `--runner-prefix` | no | `runner` | VM name prefix (used for orphan detection) |
-| `--log-level` | no | `info` | `debug`, `info`, `warn`, `error` |
-| `--log-format` | no | `text` | `text` or `json` |
+<br/>
 
-\* Either GitHub App credentials (`--app-client-id`, `--app-installation-id`, and `--app-private-key-path` or `--app-private-key`) **or** `--token` is required.
+| Flag | Req | Default | Description |
+|:---|:---:|:---|:---|
+| `--config` | | | Path to YAML config file |
+| `--url` | **yes** | | GitHub org or repo URL |
+| `--name` | **yes** | | Scale set name (`runs-on:` label) |
+| `--app-client-id` | \* | | GitHub App Client ID |
+| `--app-installation-id` | \* | | GitHub App Installation ID |
+| `--app-private-key-path` | \* | | Path to PEM file |
+| `--app-private-key` | \* | | PEM contents inline |
+| `--token` | \* | | Personal access token |
+| `--base-image` | | `ghcr.io/cirruslabs/macos-runner:sonoma` | Tart VM image |
+| `--max-runners` | | `2` | Max concurrent VMs |
+| `--min-runners` | | `0` | Warm pool size |
+| `--labels` | | _(same as `--name`)_ | Additional labels |
+| `--runner-group` | | `default` | Runner group name |
+| `--runner-prefix` | | `runner` | VM name prefix |
+| `--log-level` | | `info` | `debug` / `info` / `warn` / `error` |
+| `--log-format` | | `text` | `text` / `json` |
+
+\* Provide **either** GitHub App credentials **or** `--token`.
+
+</details>
+
+<br/>
 
 ## Image Provisioning
 
-Graftery automatically prepares ("bakes") VM images from a base Tart image. On first run (or when scripts change), it:
+Graftery automatically **bakes** a prepared VM image from your base Tart image. The first run (or whenever scripts change) triggers provisioning:
 
-1. Clones the base image (e.g., `ghcr.io/cirruslabs/macos-runner:sonoma`)
-2. Boots the clone and waits for the guest agent
-3. Runs provisioning scripts from `bake.d/` in lexicographic order via `tart exec`
-4. Shuts down the VM and saves it as a local "prepared" image
-5. Caches a hash of all script contents — subsequent runs skip provisioning if nothing changed
+```
+ Base image  ──▶  Clone  ──▶  Boot  ──▶  Run bake.d/* scripts  ──▶  Save prepared image
+                                              (lexicographic order)
+```
+
+A content hash of all scripts is cached — subsequent runs skip provisioning if nothing changed.
 
 ### Built-in scripts
 
-The following scripts are embedded in the binary and run by default:
-
 | Script | Purpose |
-|--------|---------|
-| `01-startup-script.sh` | Installs `/usr/local/bin/arc-runner-startup.sh` — reads JIT config from shared mount, starts the runner, shuts down when done |
-| `02-setup-info.py` | Generates `~/actions-runner/.setup_info` — shows VM info (OS, Xcode, Node, etc.) in the GitHub Actions "Set up job" step |
-| `03-runner-hooks.sh` | Installs pre/post job hooks using GitHub Actions' native `ACTIONS_RUNNER_HOOK_JOB_STARTED` / `ACTIONS_RUNNER_HOOK_JOB_COMPLETED` |
+|:---|:---|
+| ![01](https://img.shields.io/badge/01-startup--script.sh-094858?style=flat-square) | Installs `arc-runner-startup.sh` — reads JIT config, starts runner, shuts down when done |
+| ![02](https://img.shields.io/badge/02-setup--info.py-094858?style=flat-square) | Generates `.setup_info` — VM info shown in GitHub Actions "Set up job" step |
+| ![03](https://img.shields.io/badge/03-runner--hooks.sh-094858?style=flat-square) | Installs pre/post job hooks via `ACTIONS_RUNNER_HOOK_JOB_STARTED` / `COMPLETED` |
 
 ### Custom provisioning scripts
 
-Add your own scripts to the user scripts directory:
+Drop your own scripts into the user scripts directory:
 
 ```
 ~/Library/Application Support/graftery/scripts/
   bake.d/
-    50-install-tools.sh       # brew install jq terraform
-    60-setup-xcode.sh         # sudo xcode-select -s /Applications/Xcode_16.1.app
+    50-install-tools.sh           # brew install jq terraform
+    60-setup-xcode.sh             # sudo xcode-select -s ...
   hooks/
     pre.d/
-      50-start-metrics.sh    # custom pre-job hook
+      50-start-metrics.sh        # custom pre-job hook
     post.d/
-      50-emit-metrics.sh     # custom post-job hook
+      50-emit-metrics.sh         # custom post-job hook
 ```
 
-**Merge behavior:** User scripts are merged with built-in scripts. Scripts with the same filename override the built-in version. Scripts are executed in lexicographic order, so `50-*` runs after `01-*`, `02-*`, `03-*`.
+> **Merge behavior:** User scripts merge with built-ins. Same-name files override. Execution is lexicographic (`50-*` runs after `01-*` through `03-*`).
 
-Override the scripts directory with `--scripts-dir /path/to/scripts` or in config:
+Override the directory:
 
 ```yaml
 provisioning:
@@ -236,35 +253,36 @@ provisioning:
 ### Forcing reprovisioning
 
 ```bash
-# Force a fresh bake (e.g., after updating scripts)
-graftery --reprovision --config config.yaml
-
-# Skip all built-in scripts (only run user scripts)
-graftery --skip-builtin-scripts --config config.yaml
+graftery --reprovision --config config.yaml       # force a fresh bake
+graftery --skip-builtin-scripts --config config.yaml  # only run user scripts
 ```
 
 ### Pre/post job hooks
 
-Hooks use GitHub Actions' native runner hook mechanism. They show up in the job UI as collapsible sections:
+Hooks use GitHub Actions' native runner hook mechanism and appear in the job UI as collapsible sections:
 
-- **Pre-job hooks** (`hooks/pre.d/*.sh`) — run before each job starts, visible in "Set up runner"
-- **Post-job hooks** (`hooks/post.d/*.sh`) — run after each job completes, visible in "Complete runner"
+| Hook type | Location | Visible in |
+|:---|:---|:---|
+| **Pre-job** | `hooks/pre.d/*.sh` | "Set up runner" |
+| **Post-job** | `hooks/post.d/*.sh` | "Complete runner" |
 
-Hooks receive standard GitHub Actions environment variables (`GITHUB_REPOSITORY`, `GITHUB_RUN_ID`, etc.).
+Hooks receive standard Actions environment variables (`GITHUB_REPOSITORY`, `GITHUB_RUN_ID`, etc.).
 
 ### Base VM image requirements
 
 The base Tart image must include:
 
-1. **GitHub Actions runner binary** at `~/actions-runner/` (all `cirruslabs/macos-runner` images include this)
-2. **Tart guest agent** (all non-vanilla Cirrus Labs images include this)
-3. **python3** (required by the setup-info script)
+| Component | Note |
+|:---|:---|
+| **GitHub Actions runner** | At `~/actions-runner/` — all `cirruslabs/macos-runner` images include this |
+| **Tart guest agent** | All non-vanilla Cirrus Labs images include this |
+| **python3** | Required by the setup-info script |
 
-The default `ghcr.io/cirruslabs/macos-runner:sonoma` image satisfies all requirements.
+> The default `ghcr.io/cirruslabs/macos-runner:sonoma` satisfies all requirements.
 
-### Quick example: adding a tool to the image
+### Example: adding a tool to the baked image
 
-Need `pod` (CocoaPods) available for your builds? Create a bake script:
+Need CocoaPods for your builds? Create a bake script:
 
 ```bash
 # ~/Library/Application Support/graftery/scripts/bake.d/50-install-cocoapods.sh
@@ -276,92 +294,113 @@ gem install cocoapods
 sudo ln -sf "$(rbenv which pod)" /usr/local/bin/pod
 ```
 
-Restart the runner — it detects the new script, reprovisions the image, and every future VM has `pod` available.
+Restart the runner — it detects the new script, reprovisions, and every future VM ships with `pod`.
 
 ### More examples
 
-See the [`examples/`](examples/) directory for complete setups:
+See the [`examples/`](examples/) directory:
 
 | Example | Description |
-|---------|-------------|
+|:---|:---|
 | [iOS / React Native](examples/ios-react-native/) | CocoaPods, ccache, Expo prebuild, workflow caching for Pods and DerivedData |
 
-Each example includes bake scripts to copy into your scripts directory and a recommended workflow configuration.
+<br/>
 
 ## Troubleshooting
 
-### `tart` not found
+<details>
+<summary><img src="https://img.shields.io/badge/-tart_not_found-c94a30?style=flat-square" alt="" /></summary>
 
-The `tart` binary must be in your PATH, or specify its location explicitly:
+The `tart` binary must be in your PATH:
 
 ```bash
 brew install cirruslabs/cli/tart
 
-# Or specify the path directly:
+# Or specify explicitly:
 graftery --tart-path /opt/homebrew/bin/tart --config config.yaml
 ```
 
-In the config file:
 ```yaml
 tart_path: /opt/homebrew/bin/tart
 ```
 
-### Authentication errors
+</details>
 
-- **"either GitHub App credentials or --token is required"** -- You must provide either a GitHub App configuration (client ID, installation ID, and private key) or a personal access token. You cannot omit both.
-- **"specify either GitHub App credentials or --token, not both"** -- Use one authentication method, not both simultaneously.
-- **Private key errors** -- Ensure the PEM file path is correct and readable. If using `app_private_key` inline in YAML, use a literal block scalar (`|`) to preserve newlines.
+<details>
+<summary><img src="https://img.shields.io/badge/-Authentication_errors-c94a30?style=flat-square" alt="" /></summary>
 
-### VM cleanup / orphaned VMs
+| Error | Fix |
+|:---|:---|
+| _"either GitHub App credentials or --token is required"_ | Provide one auth method |
+| _"specify either GitHub App credentials or --token, not both"_ | Use only one method |
+| Private key errors | Check PEM path is correct and readable. For inline YAML, use `\|` block scalar |
 
-On startup, the app automatically detects and removes any VMs whose names start with the configured runner prefix (default: `runner-`). If you need to manually clean up:
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/-Orphaned_VMs-c94a30?style=flat-square" alt="" /></summary>
+
+On startup, Graftery auto-removes VMs matching the runner prefix. To clean up manually:
 
 ```bash
-# List all Tart VMs
-tart list
-
-# Stop and delete a specific runner VM
-tart stop runner-abc12345
-tart delete runner-abc12345
+tart list                         # list all VMs
+tart stop  runner-abc12345        # stop
+tart delete runner-abc12345       # delete
 ```
 
-### Scale set registration fails
+</details>
 
-- Verify the `--url` points to a valid GitHub organization or repository.
-- Ensure your GitHub App is installed on the target org/repo with the required permissions, or that your PAT has the `admin:org` scope (for org-level runners) or `repo` scope (for repo-level runners).
+<details>
+<summary><img src="https://img.shields.io/badge/-Scale_set_registration_fails-c94a30?style=flat-square" alt="" /></summary>
 
-### Max runners limit
+- Verify `--url` points to a valid GitHub org or repo
+- Ensure your GitHub App has the required permissions, or your PAT has `admin:org` (org-level) / `repo` (repo-level) scope
 
-Apple's macOS virtualization framework allows a maximum of 2 concurrent macOS VMs per host. The default `max_runners: 2` reflects this limit. Setting it higher may cause VM creation failures.
+</details>
 
-### Logs
+<details>
+<summary><img src="https://img.shields.io/badge/-Max_runners_limit-c94a30?style=flat-square" alt="" /></summary>
 
-- **GUI app**: `~/Library/Logs/graftery/graftery.log` (also accessible via menu bar -> Open Logs)
-- **CLI**: Logs are written to stderr by default. Use `--log-level debug` for verbose output.
+Apple's virtualization framework allows **max 2 concurrent macOS VMs per host**. The default `max_runners: 2` reflects this. Setting it higher may cause VM creation failures.
+
+</details>
+
+<details>
+<summary><img src="https://img.shields.io/badge/-Logs-1a8090?style=flat-square" alt="" /></summary>
+
+| Mode | Location |
+|:---|:---|
+| **GUI** | `~/Library/Logs/graftery/graftery.log` (menu bar → Open Logs) |
+| **CLI** | stderr — use `--log-level debug` for verbose output |
+
+</details>
+
+<br/>
 
 ## Building from Source
 
-Requires Go 1.26+ and Xcode command-line tools (for the Swift UI and code signing).
+Requires **Go 1.26+** and **Xcode command-line tools** (for Swift UI and code signing).
 
 ```bash
-# Build just the CLI binary (no CGO, no Swift)
-make build-cli
-
-# Build the full macOS .app bundle (CLI + Swift UI)
-make build-app
-
-# Create a drag-and-drop DMG installer
-make build-dmg
-
-# Install to /Applications
-make install
-
-# Clean build artifacts
-make clean
+make build-cli    # CLI binary only (no CGO, no Swift)
+make build-app    # full macOS .app bundle
+make build-dmg    # drag-and-drop DMG installer
+make install      # → /Applications/Graftery.app
+make clean        # remove build artifacts
 ```
 
-The built artifacts are placed in the `build/` directory.
+All artifacts are placed in the `build/` directory.
+
+<br/>
 
 ## License
 
 TBD
+
+<br/>
+
+---
+
+<p align="center">
+  <sub>Built for Apple silicon &nbsp;·&nbsp; Powered by <a href="https://tart.run">Tart</a> &nbsp;·&nbsp; Speaks <a href="https://github.com/actions/scaleset">actions/scaleset</a></sub>
+</p>
