@@ -102,11 +102,16 @@ That's it — no dependencies beyond [Tart](#requirements).
 1. **Launch Graftery** from Applications (or Spotlight).
 2. The **setup wizard** walks you through creating your first runner configuration — name it, enter your GitHub credentials, choose a base VM image, and set runner limits.
 
-<p align="center">
-  <img src="docs/screenshots/wizard-name.png" alt="Setup wizard — name your configuration" width="420" />
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/wizard-auth.png" alt="Setup wizard — authentication" width="420" />
-</p>
+<table align="center">
+<tr>
+<td align="center" valign="top"><img src="docs/screenshots/wizard-name.png" alt="Setup wizard — name your configuration" width="400" /></td>
+<td align="center" valign="top"><img src="docs/screenshots/wizard-auth.png" alt="Setup wizard — authentication" width="400" /></td>
+</tr>
+<tr>
+<td align="center"><sub>Step 1 — Name your configuration</sub></td>
+<td align="center"><sub>Step 3 — Authentication</sub></td>
+</tr>
+</table>
 
 3. The runner connects to GitHub and begins listening for jobs automatically.
 4. The **menu bar icon** shows live status. Click it to start/stop runners, add new configurations, or open the management window.
