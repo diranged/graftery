@@ -41,15 +41,19 @@ Graftery speaks the [actions/scaleset](https://github.com/actions/scaleset) prot
 
 ### Core capabilities
 
-| | Feature | Details |
-|:---|:---|:---|
-| ![](https://img.shields.io/badge/-Ephemeral_VMs-0e6878?style=flat-square) | **Clean room every job** | Each job runs in a fresh VM clone. No state leaks between jobs, ever. |
-| ![](https://img.shields.io/badge/-Auto_Scaling-0e6878?style=flat-square) | **Scale to zero** | No jobs? No VMs. Runners spin up on demand and tear down when done. Configure a warm pool (`min_runners`) for faster pickup. |
-| ![](https://img.shields.io/badge/-Image_Baking-094858?style=flat-square) | **Custom VM images** | Drop shell scripts into `bake.d/` and Graftery bakes them into a prepared image. Install Xcode, CocoaPods, Homebrew packages — whatever your builds need. Content-hashed so reprovisioning only happens when scripts change. |
-| ![](https://img.shields.io/badge/-Job_Hooks-094858?style=flat-square) | **Pre/post job hooks** | Native GitHub Actions runner hooks (`ACTIONS_RUNNER_HOOK_JOB_STARTED` / `COMPLETED`). They show up as collapsible sections in the Actions UI. |
-| ![](https://img.shields.io/badge/-Crash_Recovery-1a8090?style=flat-square) | **Orphan cleanup** | On startup, Graftery finds and removes VMs left behind by crashes. Session conflicts with GitHub are retried automatically with exponential backoff. |
-| ![](https://img.shields.io/badge/-Observability-1a8090?style=flat-square) | **Prometheus metrics** | Host CPU/memory/disk, per-VM CPU/memory/uptime, job counters — all exposed via a `/metrics` endpoint. Includes Apple hypervisor (XPC) process tracking for accurate VM resource attribution. |
-| ![](https://img.shields.io/badge/-Dry_Run-1a8090?style=flat-square) | **Dry-run mode** | Test your setup without GitHub or Tart. Simulates the full lifecycle with fake jobs so you can validate config, control socket, and UI integration end-to-end. |
+**Clean room every job** — Each job runs in a fresh VM clone. No state leaks between jobs, ever.
+
+**Scale to zero** — No jobs? No VMs. Runners spin up on demand and tear down when done. Configure a warm pool (`min_runners`) for faster pickup.
+
+**Custom VM images** — Drop shell scripts into `bake.d/` and Graftery bakes them into a prepared image. Install Xcode, CocoaPods, Homebrew packages — whatever your builds need. Content-hashed so reprovisioning only happens when scripts change.
+
+**Pre/post job hooks** — Native GitHub Actions runner hooks (`ACTIONS_RUNNER_HOOK_JOB_STARTED` / `COMPLETED`). They show up as collapsible sections in the Actions UI.
+
+**Orphan cleanup** — On startup, Graftery finds and removes VMs left behind by crashes. Session conflicts with GitHub are retried automatically with exponential backoff.
+
+**Prometheus metrics** — Host CPU/memory/disk, per-VM CPU/memory/uptime, job counters — all exposed via a `/metrics` endpoint. Includes Apple hypervisor (XPC) process tracking for accurate VM resource attribution.
+
+**Dry-run mode** — Test your setup without GitHub or Tart. Simulates the full lifecycle with fake jobs so you can validate config, control socket, and UI integration end-to-end.
 
 ### Two ways to run it
 
