@@ -372,9 +372,12 @@ struct ConfigDetailView: View {
 
             Divider()
 
-            // Tabbed config editor (includes logs as the last tab)
+            // Tabbed config editor (includes logs as the last tab).
+            // The .id() forces SwiftUI to recreate the editor when the
+            // selected config changes, ensuring loadConfig() fires fresh.
             ConfigEditorView(runner: manager)
                 .environmentObject(instance.logStore)
+                .id(manager.configPath)
         }
     }
 
