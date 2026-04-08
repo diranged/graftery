@@ -172,6 +172,36 @@ class RunnerStore: ObservableObject {
         saveState()
     }
 
+    /// Duplicates an existing configuration under a new name.
+    /// The cloned config is created in a disabled state and is not auto-started.
+    /// The `prepared_image_name` field is cleared to avoid image name collisions.
+    ///
+    /// - Parameters:
+    ///   - sourceName: The name of the configuration to clone.
+    ///   - newName: The name for the new configuration.
+    /// - Throws: If the source config cannot be loaded or the new config cannot be saved.
+    func duplicateConfig(sourceName: String, newName: String) throws {
+        guard let source = instance(named: sourceName) else {
+            throw NSError(domain: "RunnerStore", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Configuration '\(sourceName)' not found."])
+        }
+
+        var config = try AppConfig.load(from: source.configPath)
+        config.name = newName
+        config.provisioning.preparedImageName = ""
+
+        let newPath = AppConfig.configPath(forName: newName)
+        try config.save(to: newPath)
+
+        let instance = RunnerInstance(name: newName, configPath: newPath, enabled: false)
+        instance.manager.onStateChange = { [weak self] in
+            self?.objectWillChange.send()
+        }
+        instances.append(instance)
+        saveState()
+        selectedConfigName = newName
+    }
+
     /// Stops the runner, deletes the config YAML file, and removes the
     /// instance from the store. The state file is updated to reflect
     /// the removal.
