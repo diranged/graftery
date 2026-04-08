@@ -26,6 +26,10 @@ struct ConfigurationsView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var showDeleteConfirmation = false
     @State private var configToDelete: String? = nil
+    @State private var showDuplicateSheet = false
+    @State private var configToDuplicate: String? = nil
+    @State private var duplicateName = ""
+    @State private var duplicateError: String? = nil
 
     var body: some View {
         NavigationSplitView {
@@ -37,6 +41,9 @@ struct ConfigurationsView: View {
         // Destructive action confirmation — shown when the user clicks
         // "Delete..." from the context menu. Requires explicit confirmation
         // because deletion stops the runner and removes the config file.
+        .sheet(isPresented: $showDuplicateSheet) {
+            duplicateSheet
+        }
         .alert("Delete Configuration", isPresented: $showDeleteConfirmation) {
             Button("Delete", role: .destructive) {
                 if let name = configToDelete {
@@ -133,6 +140,12 @@ struct ConfigurationsView: View {
             EmptyView()
         }
         Divider()
+        Button("Duplicate...") {
+            configToDuplicate = instance.name
+            duplicateName = "\(instance.name)-copy"
+            duplicateError = nil
+            showDuplicateSheet = true
+        }
         Button("Delete...", role: .destructive) {
             configToDelete = instance.name
             showDeleteConfirmation = true
@@ -148,6 +161,69 @@ struct ConfigurationsView: View {
         case .starting, .stopping: return .orange
         case .error: return .red
         case .idle: return .gray
+        }
+    }
+
+    // MARK: - Duplicate Sheet
+
+    /// Sheet for entering the new configuration name when duplicating.
+    /// Validates the name for uniqueness and filesystem safety inline.
+    private var duplicateSheet: some View {
+        VStack(spacing: 16) {
+            Text("Duplicate Configuration")
+                .font(.headline)
+
+            TextField("New configuration name", text: $duplicateName)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { performDuplicate() }
+
+            if let error = duplicateError {
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.caption)
+            }
+
+            HStack {
+                Button("Cancel") {
+                    showDuplicateSheet = false
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Spacer()
+
+                Button("Duplicate") {
+                    performDuplicate()
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(duplicateName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(20)
+        .frame(width: 360)
+    }
+
+    /// Validates the duplicate name and performs the duplication if valid.
+    private func performDuplicate() {
+        let trimmed = duplicateName.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty {
+            duplicateError = "Configuration name is required."
+            return
+        }
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        if trimmed.unicodeScalars.contains(where: { !allowed.contains($0) }) {
+            duplicateError = "Name can only contain letters, numbers, hyphens, and underscores."
+            return
+        }
+        if FileManager.default.fileExists(atPath: AppConfig.configPath(forName: trimmed)) {
+            duplicateError = "A configuration named '\(trimmed)' already exists."
+            return
+        }
+        guard let sourceName = configToDuplicate else { return }
+        do {
+            try store.duplicateConfig(sourceName: sourceName, newName: trimmed)
+            showDuplicateSheet = false
+        } catch {
+            duplicateError = "Failed to duplicate: \(error.localizedDescription)"
         }
     }
 
